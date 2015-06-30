@@ -1,0 +1,9 @@
+<IfModule mod_rewrite.c>
+RewriteEngine on
+RewriteBase /
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ nutmouse.php?url=$1 [PT,L,QSA]
+</IfModule>
+
+Options -Indexes
