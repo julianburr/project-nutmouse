@@ -23,9 +23,9 @@ class View {
 			// If model is given, load contents from it
 			$this->model = $model;
 			$this->content = $this->model->getContent();
-			if(isset($this->content['data']['template'])){
+			if(isset($this->content->getTemplate())){
 				// Set template if given
-				$this->template = $this->content['data']['template'];
+				$this->template = $this->content->getTemplate();
 			}
 		}
 	}
@@ -64,6 +64,10 @@ class View {
 			include($filepath);
 			$this->output .= ob_get_contents();
 		ob_end_clean();
+		// Parse template output for simplified inside codes and tags
+		$tpl = new Template($this->output);
+		$tpl->parse();
+		$this->output = $tpl->getContent();
 	}
 	
 	public function getTemplateFilePath(){
