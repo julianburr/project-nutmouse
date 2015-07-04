@@ -7,6 +7,9 @@ include_once(__DIR__ . "/Controller.php");
 
 // System classes
 include_once(__DIR__ . "/System/Session.php");
+include_once(__DIR__ . "/System/Config.php");
+include_once(__DIR__ . "/System/Template.php");
 
 // Utilities e.g. for database interactions
 include_once(__DIR__ . "/Utils/SqlManager.php");
+include_once(__DIR__ . "/Utils/DateManager.php");
