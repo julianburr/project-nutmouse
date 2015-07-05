@@ -3,11 +3,11 @@
 class View {
 	
 	private $controller = null;
-	private $view = null;
+	private $model = null;
+	private $content = null;
+	private $elements = null;
 	
-	private $content = array();
 	private $template = "default";
-	
 	private $templates_root_dir = "../templates";
 	
 	private $output = null;
@@ -23,7 +23,9 @@ class View {
 			// If model is given, load contents from it
 			$this->model = $model;
 			$this->content = $this->model->getContent();
-			if(isset($this->content->getTemplate())){
+			$this->elements = $this->content->getElements();
+			$this->assign("title", "Testtitle");
+			if($this->content->getTemplate() > ""){
 				// Set template if given
 				$this->template = $this->content->getTemplate();
 			}
@@ -32,7 +34,7 @@ class View {
 	
 	public function createOutput(){
 		// Create output by parsing template
-		if(is_null($this->template)){
+		if(!$this->template){
 			throw new Exception("Cannot create output! No template set!");
 		}
 		$this->parseTemplate();
@@ -65,14 +67,12 @@ class View {
 			$this->output .= ob_get_contents();
 		ob_end_clean();
 		// Parse template output for simplified inside codes and tags
-		$tpl = new Template($this->output);
-		$tpl->parse();
-		$this->output = $tpl->getContent();
+		$this->output = Template::parse($this->output, $this->elements, $this->__);
 	}
 	
 	public function getTemplateFilePath(){
 		// Get valid filepath from set template
-		if(is_null($this->template)){
+		if(!$this->template){
 			throw new Exception("Cannot get path! No template set!");
 		}
 		// ...here comes the theme config
@@ -87,4 +87,14 @@ class View {
 		}
 		return $templatefile;
 	}
+	
+	public function setHttpHeader($header){
+		// Simply set HTTP header
+		header($header);
+	}
+	
+	public function setElements(array $elements){
+		$this->elements = $elements;
+	}
+	
 }	
