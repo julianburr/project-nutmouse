@@ -14,7 +14,7 @@ class Content {
 		$sql->setQuery("SELECT * FROM content WHERE url='{{url}}'");
 		$sql->bindParam("{{url}}", $url);
 		$content = $sql->result();
-		if(!isset($page['id'])){
+		if(!isset($content['id'])){
 			throw new Exception("No content for URL '{$url}' found!");
 			return false;
 		}
@@ -27,7 +27,7 @@ class Content {
 	
 	public function loadElements($parent=null){
 		// Returns elements loaded from the database for given parent id
-		if(!isset($this->content['id'])){
+		if(!isset($this->id)){
 			throw new Exception("Cannot get content elements! No content found!");
 			return;
 		}
@@ -37,18 +37,19 @@ class Content {
 			$sql->setQuery("SELECT * FROM content_element WHERE content_id = {{id}} AND parent_id = {{parent}} ORDER BY sortkey");
 			$sql->bindParam("{{parent}}", $parent, "int");
 		} else {
-			$sql->setQuery("SELECT * FROM content_element WHERE content_id = {{id}} AND parent_id = NULL ORDER BY sortkey");
+			$sql->setQuery("SELECT * FROM content_element WHERE content_id = {{id}} AND parent_id IS NULL ORDER BY sortkey");
 		}
-		$sql->bindParam("{{id}}", $this->content['id'], "int");
+		$sql->bindParam("{{id}}", $this->id, "int");
 		$sql->execute();
 		while($element = $sql->fetch()){
-			if(!isset($elements[$element['element_position']])){
-				$elements[$element['element_position']] = array();
+			if(!isset($elements[$element['position']])){
+				$elements[$element['position']] = array();
 			}
-			$index = count($elements[$element['element_position']]);
-			$elements[$element['element_position']][$index] = $element;
+			$element['parameters'] = unserialize($element['parameters']);
+			$index = count($elements[$element['position']]);
+			$elements[$element['position']][$index] = $element;
 			// Created parent-children array tree
-			$elements[$element['element_position']][$index]['_children'] = $this->loadElements($element['id']);				
+			$elements[$element['position']][$index]['_children'] = $this->loadElements($element['id']);				
 		}
 		return $elements;
 	}
@@ -70,10 +71,12 @@ class Content {
 	
 	public function getTemplate(){
 		// Return template set in content data if set
-		if(isset($this->data['template'])){
-			return $this->data['template'];
+		if(isset($this->data['type'])){
+			return $this->data['type'];
 		}
 		return null;
 	}
+	
+	// TODO create, update and delete handling
 	
 }
