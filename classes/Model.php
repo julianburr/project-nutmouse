@@ -11,7 +11,7 @@ class Model {
 		if(isset($controller)){
 			// If controller is given, get requested URL and load content
 			$this->controller = $controller;
-			$this->content->getFromUrl($this->controller->getUrl());
+			$this->content->loadFromUrl($this->controller->getUrl());
 		}
 	}
 	
