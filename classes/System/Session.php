@@ -4,8 +4,8 @@ class Session {
 	
 	private $id = null;
 	
-	private $user = array();
-	private $config = array();
+	private $user = null;
+	private $config = null;
 	
 	private $loggedin = false;
 	
@@ -34,7 +34,6 @@ class Session {
 		$sql->insert("session", $insert);
 		// Create all session objects
 		$this->user = new User();
-		$this->config = new Config();	
 	}
 	
 	public function kill(){
@@ -49,6 +48,7 @@ class Session {
 		$this->user->loadByLogin($username, $password);
 		if(!is_null($this->user->getID())){
 			$this->loggendin = true;
+			$this->config = new Config($this->user->getID());
 		}
 	}
 	
@@ -56,6 +56,7 @@ class Session {
 		// Log user out of session
 		$this->user = new User();
 		$this->loggedin = false;
+		$this->config = null;
 	}
 	
 	public function isLoggedIn(){
