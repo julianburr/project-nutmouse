@@ -5,6 +5,9 @@ class User {
 	private $id = null;
 	
 	private $data = array();
+	private $config = null;
+	
+	private $meta = array();
 	
 	public function __construct($id=null){
 		if(!is_null($id)){
@@ -22,6 +25,8 @@ class User {
 		if(isset($user['id']) && $user['id'] == $id){
 			$this->id = $id;
 			$this->data = $user;
+			$this->meta = Meta::load("user", $this->id);
+			$this->config = new Config($this->id);
 		}
 	}
 	
@@ -64,7 +69,7 @@ class User {
 	}
 	
 	public function getID(){
-		// Get current users ID (null if no user has been loaded!)
+		// Get current users ID (NULL if no user has been loaded!)
 		return $this->id;
 	}
 	
