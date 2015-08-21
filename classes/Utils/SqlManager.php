@@ -140,7 +140,7 @@ class SqlManager {
 		$result = mysqli_query($this->connection, $this->query);
 		
 		if(!$result){
-			throw new Exception("SQL execution error:\n\n{$this->query}\n\n" . mysqli_error());
+			throw new Exception("SQL execution error:\n\n{$this->query}\n\n" . mysqli_error($this->connection));
 		} else {
 			$this->q_result = $result;
 			return $result;
@@ -287,7 +287,7 @@ class SqlManager {
 		 * mysqli_insert_id(): PHP core function
 		 **/
 		 
-		return mysqli_insert_id();
+		return mysqli_insert_id($this->connection);
 	}
 	
 	public function getLineCount($table){
