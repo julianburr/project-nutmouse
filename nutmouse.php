@@ -8,6 +8,7 @@ try {
 	$controller = new Controller($_REQUEST['url']);
 	$model = new Model($controller);
 	$view = new View($controller, $model);
+	$view->assign("controller", $controller);
 	echo $view->createOutput();
 	
 } catch(Exception $e){
