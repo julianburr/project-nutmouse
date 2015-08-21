@@ -9,7 +9,7 @@ class SqlManager {
 	
 	private $connection;
 	
-	private $configfile =  "../../config";
+	private $configfile =  "../../config.php";
 	
 	private $query;
 	private $q_result;
