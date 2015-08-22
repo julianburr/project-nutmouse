@@ -15,6 +15,7 @@ include_once(__DIR__ . "/System/Plugin.php");
 include_once(__DIR__ . "/System/Meta.php");
 include_once(__DIR__ . "/System/Cache.php");
 include_once(__DIR__ . "/System/Locale.php");
+include_once(__DIR__ . "/System/AccessOfficer.php");
 
 // Model classes
 include_once(__DIR__ . "/Model/Content.php");
