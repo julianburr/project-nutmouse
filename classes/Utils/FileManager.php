@@ -16,12 +16,11 @@ class FileManager {
 	
 	public function setPath($path){
 		// Select file from given path
-		if(!is_file($path)){
-			return;
-		}
 		$this->path = $path;
-		$this->content = $this->read();
-		$this->content_ln = explode("\n", $this->content);
+		if(!is_file($path)){
+			$this->content = $this->read();
+			$this->content_ln = explode("\n", $this->content);
+		}
 	}
 	
 	public function delete(){
@@ -33,14 +32,27 @@ class FileManager {
 	}
 	
 	public function setContent($content){
+		// Set content of file
 		$this->content = $content;
+	}
+	
+	public function addContent($content){
+		// Add content to the end of the file
+		$this->content .= $content;
+	}
+	
+	public function append($content){
+		// Synonym for addContent()
+		$this->addContent($content);
+	}
+	
+	public function prepend($content){
+		// Add content to the beginning of the file
+		$this->content = $content . $this->content;
 	}
 	
 	public function save(){
 		// Save set content in selected file
-		if(!is_file($this->path)){
-			return;
-		}
 		file_put_contents($this->path, $this->content);
 	}
 	
