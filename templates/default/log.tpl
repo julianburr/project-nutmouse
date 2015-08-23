@@ -28,6 +28,15 @@
     <pre><?php
     	debug_print_backtrace();
     ?></pre>
+    
+    <h1>Crypttest</h1>
+    <?php
+    	$test = "I am a string!";
+        $encrypt = Crypt::encode($test, "mypassword");
+        $decrypt = Crypt::decode($encrypt, "mypassword");
+    ?>
+    <pre><?php echo $encrypt; ?></pre>
+    <pre><?php echo $decrypt; ?></pre>
 
 	<h1>Log</h1>
     <pre><?php
