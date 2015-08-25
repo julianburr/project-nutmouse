@@ -32,8 +32,8 @@ class Template {
 		// Parse if-loops from inner to outer loops -> {{if VAR OP VAR2}}...{{else}}...{{endif}}
 		$content = self::parseIfStatement($content);
 
-		if(!$content){
-			throw new Exception("Text is empty!");
+		if(!isset($content)){
+			throw new Exception("Text is not set!");
 		}
 		
 		return $content;
