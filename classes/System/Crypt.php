@@ -34,7 +34,7 @@ class Crypt {
 	public static function checkHash($data, $hash){
 		// Verify data against hash crypted data
 		if(function_exists("password_verify")){
-			password_verify($data, $hash);
+			return password_verify($data, $hash);
 		}
 		// For PHP < 5.5
 		if(md5($data . self::$salt) == $hash){
