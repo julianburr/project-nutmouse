@@ -32,7 +32,6 @@ class Session {
 	}
 	
 	private function create(){
-		debug_print_backtrace();
 		// Create a new session
 		$this->id = session_id();
 		// And write session into database
