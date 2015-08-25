@@ -22,8 +22,10 @@ include_once(__DIR__ . "/Model/Meta.php");
 include_once(__DIR__ . "/Model/Config.php");
 include_once(__DIR__ . "/Model/Session.php");
 include_once(__DIR__ . "/Model/Plugin.php");
+include_once(__DIR__ . "/Model/Version.php");
 
 // Utilities e.g. for database interactions
 include_once(__DIR__ . "/Utils/SqlManager.php");
 include_once(__DIR__ . "/Utils/DateManager.php");
 include_once(__DIR__ . "/Utils/FileManager.php");
+include_once(__DIR__ . "/Utils/FormManager.php");
