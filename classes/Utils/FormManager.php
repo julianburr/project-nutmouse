@@ -19,6 +19,7 @@ class FormManager {
 	}
 	
 	public function addInput($type, $name, $value, array $options=array(), $pos=null, $area="inputs"){
+		// Add input to form instance
 		$newinput = array(
 			"type" => 'form/input/' . $type,
 			"position" => $area,
@@ -31,6 +32,7 @@ class FormManager {
 				"value" => $value
 			))
 		);
+		// Set it to requested position if given
 		if(!isset($pos)){
 			$this->inputs[$area][] = $newinput;
 		} elseif(is_array($this->inputs[$area][$pos])){
@@ -50,34 +52,43 @@ class FormManager {
 	}
 	
 	public function addButton($text, array $options=array()){
+		// Synonym for addInput("button",...)
 		$this->addInput("button", "", $text, $options);
 	}
 	
 	public function addHidden($name, $value){
+		// Synonym for addInput("hidden",...)
 		$this->addInput("hidden", $name, $value);
 	}
 	
 	public function addHiddenAction($name){
+		// Synonym for addInput("hidden","do[]",...)
 		$this->addInput("hidden", "do[]", $name);
 	}
 	
 	public function setName($name){
+		// Set form name
 		$this->name = $name;
 	}
 	
 	public function setAction($action){
+		// Set form action
 		$this->action = $action;
 	}
 	
 	public function setMethod($method){
+		// Set form method
+		// TODO: file uploads for method post
 		$this->method = $method;
 	}
 	
 	public function setOptions(array $options){
+		// Set addition options for form tag
 		$this->options = $options;
 	}
 	
 	public function addOption($name, $value){
+		// Add an option
 		$this->options[$name] = $value;
 	}
 	
@@ -96,6 +107,24 @@ class FormManager {
 	}
 	
 	public function send($id){
+	}
+	
+	public static function printInput($type, $name, $value, array $options=array()){
+		// Print single input directly instead of gathering them in the instance first
+		$params = array_merge($options, array(
+			"type" => $type,
+			"position" => $area,
+			"name" => $name,
+			"value" => $value
+			));
+		$form = new View();
+		$form->setTemplate("element/form/input/" . $type);
+		$form->assign('parameters', $params);
+		if(isset($params['_children'])){
+			$form->setElements($params['_children']);
+		}
+		return $form->createOutput();
+		
 	}
 	
 }
