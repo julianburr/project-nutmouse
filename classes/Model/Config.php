@@ -6,37 +6,40 @@ class Config {
 	private $user = null;
 	
 	public function __construct($user=null){
-		// Set user and init config
+		// Set user and load config
 		$this->user = $user;
-		$this->init();
-	}
-	
-	public function init(){
-		// Init config array and point it to session
-		if(!is_null($this->user)){
-			$this->config = &$_SESSION['__CONFIG' . $this->user . '__'];
-		} else {
-			$this->config = &$_SESSION['__CONFIG__'];
-		}
-		if(!isset($this->config) || !is_array($this->config)){
-			// Load config if not done yet
-			$this->load();
-		}
+		$this->load();
 	}
 	
 	public function load(){
-		// Load config from database
-		$sql = new SqlManager();
-		if(!is_null($this->user)){
-			$sql->setQuery("SELECT * FROM config WHERE user_id = {{user}}");
-			$sql->bindParam("{{user}}", $this->user);
-		} else {
-			$sql->setQuery("SELECT * FROM config WHERE user_id = NULL");
+		// Load config
+		// Try from cache
+		$cachekey = "config";
+		if($this->user){
+			$cachekey .= ":" . $this->user;
 		}
-		$sql->execute();
-		$this->config = array();
-		while($row = $sql->fetch()){
-			$this->config[$row['name']] = $row['value'];
+		$this->config = Cache::load("config");
+		if(!is_array($this->config) || $this->get('cache.active') != 1){
+			// Load config from database
+			$sql = new SqlManager();
+			if(!is_null($this->user)){
+				$sql->setQuery("SELECT * FROM config WHERE user_id = {{user}}");
+				$sql->bindParam("{{user}}", $this->user);
+			} else {
+				$sql->setQuery("SELECT * FROM config WHERE user_id IS NULL");
+			}
+			$sql->execute();
+			$this->config = array();
+			while($row = $sql->fetch()){
+				$this->config[$row['name']] = $row['value'];
+			}
+			if(!isset($this->config['cache.active']) || $this->config['cache.active'] != 1){
+				// If cache is deactivated, clear possible cache file
+				Cache::clear($cachekey);
+			} else {
+				// If cache is activeated, save config for later use
+				Cache::save($cachekey, $this->config);
+			}
 		}
 	}
 	
@@ -54,7 +57,10 @@ class Config {
 	
 	public function get($name){
 		// Get config from currently loaded config array
-		return $this->config[$name];
+		if(isset($this->config[$name])){
+			return $this->config[$name];
+		}
+		return null;
 	}
 	
 }
