@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Log</title>
+    <title>Foxplot Log</title>
 </head>
 
 <body>
@@ -10,10 +10,14 @@
 	<?php if($this->__['controller']->getSession()->isLoggedIn()): ?>
     <p>You are logged in!</p>
     <h1>Logout</h1>
-    <form name="logout" action="" method="post">
-    	<input type="hidden" name="do[]" value="userLogout">
-        <button>Logout</button>
-    </form>
+    <?php
+    	$form = new FormManager();
+        $form->setName("login");
+        $form->setMethod("post");
+        $form->addHiddenAction("userLogin");
+        $form->addButton("Logout");
+        echo $form->createOutput();
+    ?>
     <?php else: ?>
     <h1>Login</h1>
     <?php
@@ -21,7 +25,7 @@
         $form->setName("login");
         $form->setMethod("post");
         $form->addHiddenAction("userLogin");
-        $form->addInput("text", "username", $this->__['controller']->getRequest()['username']);
+        $form->addInput("text", "username", $this->__['controller']->getRequest('username'));
         $form->addInput("password", "password", "");
         $form->addButton("Login");
         echo $form->createOutput();

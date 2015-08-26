@@ -17,7 +17,7 @@ class Template {
 		
 		if(count($vars) > 0){
 			// Parse parameter calls -> {{param CODE}}
-			$content = self::parseParams($content, $vars);
+			// $content = self::parseParams($content, $vars);
 			// Parse simple variables -> {{var CODE}}
 			$content = self::parseVars($content, $vars);
 		}
@@ -85,7 +85,10 @@ class Template {
 		$cnt = preg_match_all("/\{\{var (.+?)\}\}/", $content, $matches);
 		for($i=0; $i<$cnt; $i++){
 			$split = split("\.", $matches[1][$i]);
-			$replace = $vars[$split[0]];
+			$replace = "";
+			if(isset($vars[$split[0]])){
+				$replace = $vars[$split[0]];
+			}
 			for($j=1; $j<count($split); $j++){
 				$replace = $replace[$split[$j]];
 			}
