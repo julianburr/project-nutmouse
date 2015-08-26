@@ -16,6 +16,8 @@ class Template {
 		// TODO
 		
 		if(count($vars) > 0){
+			// Parse parameter calls -> {{param CODE}}
+			$content = self::parseParams($content, $vars);
 			// Parse simple variables -> {{var CODE}}
 			$content = self::parseVars($content, $vars);
 		}
