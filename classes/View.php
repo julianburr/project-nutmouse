@@ -7,6 +7,8 @@ class View {
 	private $content = null;
 	private $elements = null;
 	
+	private $config = null;
+	
 	private $template = "default";
 	private $templates_root_dir = "../templates";
 	
@@ -30,6 +32,7 @@ class View {
 				$this->template = $this->content->getTemplate();
 			}
 		}
+		$this->config = new Config();
 	}
 	
 	public function createOutput(){
@@ -76,7 +79,7 @@ class View {
 			throw new Exception("Cannot get path! No template set!");
 		}
 		// ...here comes the theme config
-		$templatefile = __DIR__ . "/" . $this->templates_root_dir . "/[THEME]/" . $this->template . ".tpl";
+		$templatefile = __DIR__ . "/" . $this->templates_root_dir . "/" . $this->config->get("site.theme") . "/" . $this->template . ".tpl";
 		if(!is_file($templatefile)){
 			// Default theme name should be saved in var as well...
 			$templatefile = __DIR__ . "/" . $this->templates_root_dir . "/default/" . $this->template . ".tpl";
