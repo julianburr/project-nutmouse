@@ -70,8 +70,13 @@ class Controller {
 		return $this->session;
 	}
 	
-	public function getRequest(){
-		return $this->request;
+	public function getRequest($key=null){
+		if(is_null($key)){
+			return $this->request;
+		} elseif(isset($this->request[$key])){
+			return $this->request[$key];
+		}
+		return null;
 	}
 	
 	public function getResponse(){
