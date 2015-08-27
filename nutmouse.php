@@ -8,13 +8,13 @@ try {
 	$controller = new Controller($_REQUEST['url']);
 	$model = new Model($controller);
 	$view = new View($controller, $model);
-	$view->assign("controller", $controller);
+	$view->assignVar("controller", $controller);
 	echo $view->createOutput();
 	
 } catch(Exception $e){
 	// Catch possible exceptions
 	$exception = new View();
 	$exception->setTemplate("error/exception");
-	$exception->assign("e", $e);
+	$exception->assignVar("e", $e);
 	echo $exception->createOutput();
 }

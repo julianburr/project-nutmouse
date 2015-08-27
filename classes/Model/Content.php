@@ -3,16 +3,14 @@
 class Content {
 	
 	private $id;
-	
-	private $data = array();
-	private $elements = array();
+	private $data = array('meta' => array(), 'elements' => array());
 	
 	public function loadFromUrl($url){
 		// Loads content with given URL
 		// Try from cache
 		$cachekey = "content:" . $url;
 		$content = Cache::load($cachekey);
-		if(!$content['id']){
+		if(!isset($content['id'])){
 			// No cache found, load from database
 			$sql = new SqlManager();
 			// ...here server and language (both coming from controller if available) should be included!
@@ -26,42 +24,50 @@ class Content {
 			$this->id = $content['id'];
 			$this->data = $content;
 			// Load other content data as well
-			$this->elements = $this->loadElements();
+			$this->data['meta'] = $this->loadMeta();
+			$this->data['elements'] = $this->loadElements();
+			Cache::save($cachekey, $this->data);
 		}
 		return true;
 	}
 	
+	public function loadMeta(){
+		// Get meta data for loaded content
+		if(!$this->id){
+			throw new Exception("Cannot get meta data! No content set!");
+			return;
+		}
+		return Meta::load("content", $this->id);
+	}
+	
 	public function loadElements($parent=null){
-		// Returns elements loaded from the database for given parent id
+		// Get elements to loaded content from the database for given parent id
+		// Is used recursiv to load the hierarchical structure of the content elements
 		if(!isset($this->id)){
-			throw new Exception("Cannot get content elements! No content found!");
+			throw new Exception("Cannot get content elements! No content set!");
 			return;
 		}
 		// Try from cache first
-		$elements = null;
-		$cachekey = "elements:" . $this->id;
-		$elements = Cache::load($cachekey);
-		if(!is_array($elements)){
-			// No cache found, load from database
-			$sql = new SqlManager();
-			if($parent > 0){
-				$sql->setQuery("SELECT * FROM content_element WHERE content_id = {{id}} AND parent_id = {{parent}} ORDER BY sortkey");
-				$sql->bindParam("{{parent}}", $parent, "int");
-			} else {
-				$sql->setQuery("SELECT * FROM content_element WHERE content_id = {{id}} AND parent_id IS NULL ORDER BY sortkey");
+		$elements = array();
+		// No cache found, load from database
+		$sql = new SqlManager();
+		if($parent > 0){
+			$sql->setQuery("SELECT * FROM content_element WHERE content_id = {{id}} AND parent_id = {{parent}} ORDER BY sortkey");
+			$sql->bindParam("{{parent}}", $parent, "int");
+		} else {
+			$sql->setQuery("SELECT * FROM content_element WHERE content_id = {{id}} AND parent_id IS NULL ORDER BY sortkey");
+		}
+		$sql->bindParam("{{id}}", $this->id, "int");
+		$sql->execute();
+		while($element = $sql->fetch()){
+			if(!isset($elements[$element['position']])){
+				$elements[$element['position']] = array();
 			}
-			$sql->bindParam("{{id}}", $this->id, "int");
-			$sql->execute();
-			while($element = $sql->fetch()){
-				if(!isset($elements[$element['position']])){
-					$elements[$element['position']] = array();
-				}
-				$element['parameters'] = unserialize($element['parameters']);
-				$index = count($elements[$element['position']]);
-				$elements[$element['position']][$index] = $element;
-				// Created parent-children array tree
-				$elements[$element['position']][$index]['_children'] = $this->loadElements($element['id']);				
-			}
+			$element['parameters'] = unserialize($element['parameters']);
+			$index = count($elements[$element['position']]);
+			$elements[$element['position']][$index] = $element;
+			// Created parent-children array tree
+			$elements[$element['position']][$index]['_children'] = $this->loadElements($element['id']);				
 		}
 		return $elements;
 	}
@@ -78,7 +84,12 @@ class Content {
 	
 	public function getElements(){
 		// Return elements array
-		return $this->elements;
+		return $this->data['elements'];
+	}
+	
+	public function getMeta(){
+		// Return meta data array
+		return $this->data['meta'];
 	}
 	
 	public function getTemplate(){

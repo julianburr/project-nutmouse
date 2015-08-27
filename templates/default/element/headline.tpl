@@ -1,1 +1,1 @@
-<h{{param level}}>{{var element.text}}</h{{param level}}>
+<h<?php echo $this->getParam('level'); ?>><?php echo $this->getVar('element.text'); ?></h<?php echo $this->getParam('level'); ?>>

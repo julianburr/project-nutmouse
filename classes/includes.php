@@ -6,7 +6,6 @@ include_once(__DIR__ . "/View.php");
 include_once(__DIR__ . "/Controller.php");
 
 // System classes
-include_once(__DIR__ . "/System/Template.php");
 include_once(__DIR__ . "/System/Action.php");
 include_once(__DIR__ . "/System/HookPoint.php");
 include_once(__DIR__ . "/System/Cache.php");

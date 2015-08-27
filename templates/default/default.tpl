@@ -2,14 +2,14 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>{{var title}}</title>
+    <title><?php echo $this->getVar('meta.title'); ?></title>
 </head>
 
 <body>
 
 	<h1>Here comes the unbelievable default template</h1>
     
-    {{area content}}
+    <?php echo $this->getElements('content'); ?>
 
 </body>
 </html>

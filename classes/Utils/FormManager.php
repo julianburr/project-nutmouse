@@ -109,22 +109,17 @@ class FormManager {
 	public function send($id){
 	}
 	
-	public static function printInput($type, $name, $value, array $options=array()){
+	public static function createInput($type, $name, $value, array $options=array()){
 		// Print single input directly instead of gathering them in the instance first
 		$params = array_merge($options, array(
 			"type" => $type,
-			"position" => $area,
 			"name" => $name,
 			"value" => $value
 			));
-		$form = new View();
-		$form->setTemplate("element/form/input/" . $type);
-		$form->assign('parameters', $params);
-		if(isset($params['_children'])){
-			$form->setElements($params['_children']);
-		}
-		return $form->createOutput();
-		
+		$input = new View();
+		$input->setTemplate("element/form/input/" . $type);
+		$input->assignParams($params);
+		return $input->createOutput();
 	}
 	
 }

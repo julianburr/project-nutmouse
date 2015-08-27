@@ -1,1 +1,1 @@
-{{var element.text}}
+<?php echo $this->getVar('element.text'); ?>

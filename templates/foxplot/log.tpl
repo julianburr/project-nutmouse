@@ -7,14 +7,19 @@
 
 <body>
 
-	<?php if($this->__['controller']->getSession()->isLoggedIn()): ?>
+	<h1>Test</h1>
+    <?php 
+    	echo FormManager::createInput("text", "test", "Dies ist ein Test"); 
+    ?>
+
+	<?php if($this->getVar('controller')->getSession()->isLoggedIn()): ?>
     <p>You are logged in!</p>
     <h1>Logout</h1>
     <?php
     	$form = new FormManager();
         $form->setName("login");
         $form->setMethod("post");
-        $form->addHiddenAction("userLogin");
+        $form->addHiddenAction("userLogout");
         $form->addButton("Logout");
         echo $form->createOutput();
     ?>
@@ -25,7 +30,7 @@
         $form->setName("login");
         $form->setMethod("post");
         $form->addHiddenAction("userLogin");
-        $form->addInput("text", "username", $this->__['controller']->getRequest('username'));
+        $form->addInput("text", "username", $this->getVar('controller')->getRequest('username'));
         $form->addInput("password", "password", "");
         $form->addButton("Login");
         echo $form->createOutput();
@@ -35,11 +40,6 @@
     <h1>Backtrace</h1>
     <pre><?php
     	debug_print_backtrace();
-    ?></pre>
-    
-	<h1>Log</h1>
-    <pre><?php
-    	var_dump($this->__);
     ?></pre>
 
 </body>

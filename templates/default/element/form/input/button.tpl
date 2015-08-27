@@ -1,3 +1,3 @@
 <div class="wrap-input">
-<button>{{param value}}</button>
+<button><?php echo $this->getParam("value"); ?></button>
 </div>

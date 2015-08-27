@@ -9,9 +9,9 @@
 
 	<h1>Exception Caught</h1>
     
-    <p><?php echo $this->__['e']->getMessage(); ?></p>
+    <p><?php echo $this->getVar('e')->getMessage(); ?></p>
     
-    <pre><?php echo $this->__['e']->getTraceAsString(); ?></pre>
+    <pre><?php echo $this->getVar('e')->getTraceAsString(); ?></pre>
 
 </body>
 </html>
