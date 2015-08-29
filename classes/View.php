@@ -173,6 +173,63 @@ class View {
 		}
 		return $output;
 	}
-		
+			
+	public function getUrl($id){
+		// Get canonical URL from ID
+		$content = new Content();
+		$content->loadFromID($id, false, false);
+		if($content->getID() != $id){
+			return "#";
+		}
+		$rootdir = str_replace(realpath(dirname(__DIR__ . "/../index.php")), "", realpath($_SERVER['DOCUMENT_ROOT']));
+		return "/" . $rootdir . $content->getUrl();
+	}
 	
-}	
+	public function getTitle($id){
+		// Get page title from ID
+		$content = new Content();
+		$content->loadFromID($id, true, false);
+		$data = $content->getData();
+		if(!isset($data['meta']['title'][0])){
+			$title = "na";
+		} else {
+			$title = $data['meta']['title'][0];
+		}
+		return $title;
+	}
+	
+	public function getUrlFromURL($id){
+		// Get canonical URL from URL
+		$content = new Content();
+		$content->loadFromUrl($url, false, false);
+		if($content->getUrl() != $url){
+			return "#";
+		}
+		$rootdir = str_replace(dirname(__DIR__ . "/../../index.php"), "", $_SERVER['DOCUMENT_ROOT']);
+		return "/" . $rootdir . $content->getUrl();
+	}
+	
+	public function getTitleFromUrl($url){
+		// Get page title from URL
+		$content = new Content();
+		$content->loadFromUrl($url, false, true);
+		$data = $content->getData();
+		if(!isset($data['meta']['title'])){
+			$title = "na";
+		} else {
+			$title = $data['meta']['title'];
+		}
+		return $title;
+	}
+	
+	public function includeTemplate($path, $params=array(), $elements=array()){
+		// Include template with parameter options and return parsed output
+		$view = new View();
+		$view->setTemplate($path);
+		$view->assignVars($this->vars);
+		$view->assignParams($params);
+		$view->setElements($elements);
+		return $view->createOutput();
+	}
+	
+}

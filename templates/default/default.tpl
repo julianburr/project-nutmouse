@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title><?php echo $this->getVar('meta.title'); ?></title>
+    <title><?php echo $this->getVar('meta.title.0'); ?></title>
 </head>
 
 <body>
