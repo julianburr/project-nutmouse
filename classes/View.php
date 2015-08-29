@@ -9,6 +9,7 @@ class View {
 	private $config = null;
 	
 	private $template = "default";
+	private $theme = null;
 	private $templates_root_dir = "../templates";
 	
 	private $output = null;
@@ -45,8 +46,9 @@ class View {
 		return $this->output;
 	}
 	
-	public function setTemplate($template){
+	public function setTemplate($template, $theme=null){
 		$this->template = $template;
+		$this->theme = $theme;
 	}
 	
 	public function assignVar($name, $value){
@@ -80,7 +82,12 @@ class View {
 			throw new Exception("Cannot get path! No template set!");
 		}
 		// ...here comes the theme config
-		$templatefile = __DIR__ . "/" . $this->templates_root_dir . "/" . $this->config->get("site.theme") . "/" . $this->template . ".tpl";
+		$theme = $this->config->get("site.theme");
+		if(!is_null($this->theme)){
+			// or the forced theme if set
+			$theme = $this->theme;
+		}
+		$templatefile = __DIR__ . "/" . $this->templates_root_dir . "/" . $theme . "/" . $this->template . ".tpl";
 		if(!is_file($templatefile)){
 			// Default theme name should be saved in var as well...
 			$templatefile = __DIR__ . "/" . $this->templates_root_dir . "/default/" . $this->template . ".tpl";
@@ -222,10 +229,10 @@ class View {
 		return $title;
 	}
 	
-	public function includeTemplate($path, $params=array(), $elements=array()){
+	public function includeTemplate($path, $params=array(), $elements=array(), $theme=null){
 		// Include template with parameter options and return parsed output
 		$view = new View();
-		$view->setTemplate($path);
+		$view->setTemplate($path, $theme);
 		$view->assignVars($this->vars);
 		$view->assignParams($params);
 		$view->setElements($elements);
