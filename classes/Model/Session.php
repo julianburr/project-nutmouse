@@ -85,6 +85,32 @@ class Session {
 		return false;
 	}
 	
+	public function userLogin($request){
+		// Action method to login user by request username and password
+		if(empty($request['username']) || empty($request['password'])){
+			$missing_fields = array();
+			if(empty($this->request['username'])) $missing_fields[] = "username";
+			if(empty($this->request['password'])) $missing_fields[] = "password";
+			return array(
+				"message" => array(
+					"type" => "error", 
+					"code" => "MandatoryInputMissing"
+				),
+				"missing_fields" => $missing_fields					
+			);
+		}
+		$success = $this->login($request['username'], $request['password']);
+		if(!$success){
+			return array(
+				"message" => array(
+					"type" => "error", 
+					"code" => "LoginFailed"
+				)
+			);
+		}
+		return true;
+	}
+	
 	public function logout(){
 		// Log user out of session
 		$this->user = new User();
@@ -95,5 +121,12 @@ class Session {
 		// Check if session has a user logged in
 		return $this->loggedin;
 	}
-		
+	
+	public function registerActions(){
+		// Register actions for session instance
+		Action::register("killMe", array($this, "kill"));
+		Action::register("userLogin", array($this, "userLogin"));
+		Action::register("userLogout", array($this, "logout"));
+	}
+
 }

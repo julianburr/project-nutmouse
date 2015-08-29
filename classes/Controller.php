@@ -4,6 +4,7 @@ class Controller {
 	
 	private $url = null;
 	private $server = null;
+	private $content_id = null;
 	
 	private $get = array();
 	private $post = array();
@@ -26,7 +27,7 @@ class Controller {
 		$this->session->init();
 		// If URL is given, save and analyize request
 		if(isset($url)){
-			$this->url = $url;
+			$this->setUrl($url);
 			$this->analyzeRequest();
 		}
 	}
@@ -34,6 +35,9 @@ class Controller {
 	public function setUrl($url){
 		// Set URL to given string
 		$this->url = $url;
+		$content = new Content();
+		$content->loadFromUrl($this->url);
+		$this->content_id = $content->getID();
 	}
 	
 	public function analyzeRequest(){
@@ -92,7 +96,7 @@ class Controller {
 				$this->response[$this->request['do']] = $action->run();
 			} else {
 				foreach($this->request['do'] as $do){
-					$action->init($do);
+					$action->init($do, $this->request);
 					$this->response[$do] = $action->run();
 				}
 			}
@@ -128,33 +132,18 @@ class Controller {
 	}
 	
 	private function registerActions(){
-		Action::register("killMe", array($this->session, "kill"));
-		Action::register("userLogin", array($this, "userLogin"));
-		Action::register("userLogout", array($this, "userLogout"));
+		$this->session->registerActions();
 	}
 	
-	public function userLogin(){
-		if(empty($this->request['username']) || empty($this->request['password'])){
-			$missing_fields = array();
-			if(empty($this->request['username'])) $missing_fields[] = "username";
-			if(empty($this->request['password'])) $missing_fields[] = "password";
-			return array(
-				"message" => array(
-					"type" => "error", 
-					"code" => "MandatoryInputMissing"
-				),
-				"missing_fields" => $missing_fields					
-			);
-		}
-		$success = $this->session->login($this->request['username'], $this->request['password']);
-		if(!$success){
-			return array("message" => array("type" => "error", "code" => "LoginFailed"));
-		}
-		return true;
+	public function isCurrentContent(Content $content){
+		$this->isCurrentContentID($content->getID());
 	}
 	
-	public function userLogout(){
-		return $this->session->logout();	
+	public function isCurrentContentID($id){
+		if($id == $this->content_id){
+			return true;
+		}
+		return false;
 	}
 	
 }
