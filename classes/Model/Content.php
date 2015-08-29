@@ -5,10 +5,10 @@ class Content {
 	private $id;
 	private $data = array('meta' => array(), 'elements' => array());
 	
-	public function loadFromUrl($url){
+	public function loadFromUrl($url, $loadmeta=true, $loadelements=true){
 		// Loads content with given URL
 		// Try from cache
-		$cachekey = "content:" . $url;
+		$cachekey = "content:url:" . $url;
 		$content = Cache::load($cachekey);
 		if(!isset($content['id'])){
 			// No cache found, load from database
@@ -26,7 +26,36 @@ class Content {
 			// Load other content data as well
 			$this->data['meta'] = $this->loadMeta();
 			$this->data['elements'] = $this->loadElements();
+			// Save cache for later
 			Cache::save($cachekey, $this->data);
+			Cache::save("content:id:" . $this->id, $this->data);
+		}
+		return true;
+	}
+	
+	public function loadFromID($id, $loadmeta=true, $loadelements=true){
+		// Loads content with given ID
+		$cachekey = "content:id:" . $id;
+		$content = Cache::load($cachekey);
+		if(!isset($content['id'])){
+			// No cache found, load from database
+			$sql = new SqlManager();
+			// ...here server and language (both coming from controller if available) should be included!
+			$sql->setQuery("SELECT * FROM content WHERE id={{id}}");
+			$sql->bindParam("{{id}}", $id, "int");
+			$content = $sql->result();
+			if(!isset($content['id'])){
+				throw new Exception("No content for ID '{$id}' found!");
+				return false;
+			}
+			$this->id = $content['id'];
+			$this->data = $content;
+			// Load other content data as well
+			if($loadmeta) $this->data['meta'] = $this->loadMeta();
+			if($loadelements) $this->data['elements'] = $this->loadElements();
+			// Save cache for later
+			Cache::save($cachekey, $this->data);
+			Cache::save("content:url:" . $this->data['url'], $this->data);
 		}
 		return true;
 	}
@@ -80,6 +109,11 @@ class Content {
 	public function getData(){
 		// Return data array
 		return $this->data;
+	}
+	
+	public function getUrl(){
+		// Return url string
+		return $this->data['url'];
 	}
 	
 	public function getElements(){
