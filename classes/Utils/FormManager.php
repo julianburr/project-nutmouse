@@ -24,7 +24,7 @@ class FormManager {
 			"type" => 'form/input/' . $type,
 			"position" => $area,
 			"name" => $name,
-			"value" => $value,
+			"value" => self::escape($value),
 			"parameters" => array_merge($options, array(
 				"type" => $type,
 				"position" => $area,
@@ -114,12 +114,17 @@ class FormManager {
 		$params = array_merge($options, array(
 			"type" => $type,
 			"name" => $name,
-			"value" => $value
+			"value" => self::escape($value)
 			));
 		$input = new View();
 		$input->setTemplate("element/form/input/" . $type);
 		$input->assignParams($params);
 		return $input->createOutput();
+	}
+	
+	public static function escape($value){
+		// Escape string to be used as input value of any kind
+		return htmlspecialchars($value);
 	}
 	
 }
