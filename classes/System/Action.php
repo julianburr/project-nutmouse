@@ -2,14 +2,10 @@
 
 class Action {
 	
-	private static $register = array();
-	
 	private $name = null;
 	private $args = array();
 	
 	public function __construct($name=null, $args=array()){
-		// Point register to session
-		$this->register = &$_SESSION['action_register'];
 		// Init action name if given
 		if(!is_null($name)) $this->init($name, $args);
 	}
@@ -22,17 +18,15 @@ class Action {
 	
 	public static function register($name, $function){
 		// Save new action in register
-		if(!isset(self::$register[$name]) || !is_array(self::$register[$name])){
-			self::$register[$name] = array();
-		}
-		self::$register[$name][] = $function;
+		Stack::add("action:" . $name, $function);
 	}
 	
 	public function run(){
 		// Run action of current instance
-		if(isset(self::$register[$this->name])){
+		$functions = Stack::get("action:" . $this->name);
+		if(is_array($functions)){
 			$response = array();
-			foreach(self::$register[$this->name] as $function){
+			foreach($functions as $function){
 				if(is_array($function)){
 					$instance = null;
 					if(is_object($function[0])){
