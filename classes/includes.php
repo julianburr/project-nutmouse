@@ -11,6 +11,7 @@ include_once(__DIR__ . "/System/HookPoint.php");
 include_once(__DIR__ . "/System/Cache.php");
 include_once(__DIR__ . "/System/AccessOfficer.php");
 include_once(__DIR__ . "/System/Crypt.php");
+include_once(__DIR__ . "/System/Stack.php");
 
 // Model classes
 include_once(__DIR__ . "/Model/Content.php");
@@ -22,6 +23,7 @@ include_once(__DIR__ . "/Model/Config.php");
 include_once(__DIR__ . "/Model/Session.php");
 include_once(__DIR__ . "/Model/Plugin.php");
 include_once(__DIR__ . "/Model/Version.php");
+include_once(__DIR__ . "/Model/Rewrite.php");
 
 // Utilities e.g. for database interactions
 include_once(__DIR__ . "/Utils/SqlManager.php");
