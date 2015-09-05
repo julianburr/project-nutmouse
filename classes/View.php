@@ -16,6 +16,7 @@ class View {
 	
 	private $vars = array();
 	private $parameters = array();
+	private $defined_parameters = array();
 	private $elements = array();
 	
 	public function __construct(Controller $controller=null, Model $model=null){
@@ -81,22 +82,38 @@ class View {
 		if(!$this->template){
 			throw new Exception("Cannot get path! No template set!");
 		}
-		// ...here comes the theme config
+		return $this->getThemeFilePath($this->template . ".tpl", true);
+	}
+	
+	public function getThemeFilePath($path, $abs=false){
+		$file = $this->getThemeFile($path);
+		if($abs){
+			return $file->getPath();
+		}
+		return $file->getUrl();
+	}
+	
+	public function getThemeFile($path){
+		// Get current theme from config
 		$theme = $this->config->get("site.theme");
 		if(!is_null($this->theme)){
 			// or the forced theme if set
 			$theme = $this->theme;
 		}
-		$templatefile = __DIR__ . "/" . $this->templates_root_dir . "/" . $theme . "/" . $this->template . ".tpl";
-		if(!is_file($templatefile)){
-			// Default theme name should be saved in var as well...
-			$templatefile = __DIR__ . "/" . $this->templates_root_dir . "/default/" . $this->template . ".tpl";
-			if(!is_file($templatefile)){
-				throw new Exception("Template file '{$this->template}' not found!");
+		$themefile = __DIR__ . "/" . $this->templates_root_dir . "/" . $theme . "/" . $path;
+		$file = new FileManager($themefile);
+		if(!$file->isFile()){
+			$file->setPath(__DIR__ . "/" . $this->templates_root_dir . "/default/" . $path);
+			if(!$file->isFile()){
+				throw new Exception("File '{$path}' not found!");
 				return false;
 			}
 		}
-		return $templatefile;
+		return $file;
+	}
+	
+	public function getThemeFileUrl($path){
+		$this->getThemeFilePath($path);
 	}
 	
 	public function setHttpHeader($header){
@@ -129,6 +146,11 @@ class View {
 		return $vars;
 	}
 	
+	public function getVars(){
+		// Returns all variables assigned to view instance
+		return $this->vars;
+	}
+	
 	public function getParam($name){
 		// Same for parameters
 		$parts = split("\.", $name);
@@ -148,7 +170,7 @@ class View {
 		$content = "";
 		if(isset($this->elements[$area])){
 			foreach($this->elements[$area] as $element){
-				$view = new View();
+				$view = new View($this->controller, $this->model);
 				if(!isset($element['type'])){
 					throw new Exception("No template type set!");
 				}
@@ -165,6 +187,14 @@ class View {
 			}
 		}
 		return $content;
+	}
+	
+	public function countElements($area){
+		// Get number of elements assigned to specific area
+		if(!isset($this->elements[$area]) || !is_array($this->elements[$area])){
+			return 0;
+		}
+		return count($this->elements[$area]);	
 	}
 	
 	public function printIfSet($var, $output){
@@ -192,6 +222,16 @@ class View {
 		return "/" . $rootdir . $content->getUrl();
 	}
 	
+	public function getContent(){
+		// Return content object
+		return $this->content;
+	}
+	
+	public function getHomeUrl(){
+		// TODO
+		return "/";
+	}
+	
 	public function getTitle($id){
 		// Get page title from ID
 		$content = new Content();
@@ -205,14 +245,14 @@ class View {
 		return $title;
 	}
 	
-	public function getUrlFromURL($id){
+	public function getUrlFromURL($url){
 		// Get canonical URL from URL
 		$content = new Content();
 		$content->loadFromUrl($url, false, false);
 		if($content->getUrl() != $url){
 			return "#";
 		}
-		$rootdir = str_replace(dirname(__DIR__ . "/../../index.php"), "", $_SERVER['DOCUMENT_ROOT']);
+		$rootdir = str_replace(dirname(__DIR__ . "/../../nutmouse.php"), "", $_SERVER['DOCUMENT_ROOT']);
 		return "/" . $rootdir . $content->getUrl();
 	}
 	
@@ -231,12 +271,73 @@ class View {
 	
 	public function includeTemplate($path, $params=array(), $elements=array(), $theme=null){
 		// Include template with parameter options and return parsed output
-		$view = new View();
+		$view = new View($this->controller, $this->model);
 		$view->setTemplate($path, $theme);
 		$view->assignVars($this->vars);
 		$view->assignParams($params);
 		$view->setElements($elements);
 		return $view->createOutput();
+	}
+	
+	public function extendTemplate($path, $theme=null){
+		// Include template with same vars, params, etc.
+		return $this->includeTemplate($path, $this->parameters, $this->elements, $theme);
+	}
+	
+	public function getPageTitle(){
+		// Set page and site title together
+		if(is_null($this->content)){
+			//return;
+		}
+		$title = $this->getVar("meta.title.0");
+		$title .= $this->printIfSet(array(Locale::get("Frontend.Server" . $this->content->getServerID() . ".Title"), $this->getVar("meta.title.0")), " | ");
+		$title .= Locale::get("Frontend.Server" . $this->content->getServerID() . ".Title"); 
+		return $title;
+	}
+	
+	public function defineParam($name, $type, $default=null){
+		// Define params for this template (e.g. for automated backend masks)
+		$this->defined_parameters[$name] = array("name" => $name, "type" => $type, "default" => $default);
+		if(!is_null($default) && isset($this->parameters[$name])){
+			// Set default as fallback
+			$this->parameters[$name] = $default;
+		}
+	}
+	
+	public function getScripts($type, $env="frontend"){
+		// Get stacked scripts of requested type
+		$scripts = Stack::get("scripts:" . $type);
+        $included = array();
+		$output = "";
+        foreach($scripts as $script){
+        	if(( isset($script['exclude']) && isset($script['exclude']['frontend'][$env]) && $script['exclude'][$env] ) || 
+                !isset($script['filepath']) || ( isset($script['id']) && in_array($script['id'], $included)) ){
+            	continue;
+            }
+			// If set, save id as included to prevent multiple inclusion of the same file
+			if(isset($script['id'])){
+				$included[] = $script['id'];
+			}
+			switch($type){
+            	case "js":
+                	$output .= "/t<script src='" . $script['filepath'] . "'></script>/n";
+                    break;
+                case "css":
+                	$output .= "/t<link rel='stylesheet' href='" . $script['filepath'] . "'>\n";
+                 	break;
+            }
+        }
+		return $output;
+	}
+	
+	public function getContentDescription($maxlength=100){
+		// Get meta description of content
+		$desc = $this->getVar('meta.description');
+		if(is_null($desc)){
+			// Build desc from the scretch
+			// TODO
+		}
+		return $desc;
 	}
 	
 }
