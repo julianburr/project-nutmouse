@@ -532,4 +532,18 @@ class SqlManager {
 		return $queries;
 	}
 	
+	public function arrayToInString(array $array){
+		// Transforms an array of values to a string to be used in an IN statement
+		$string = "";
+		$sep = "";
+		foreach($array as $value){
+			if(is_numeric($value)){
+				$string .= $sep . $value;
+			} else {
+				$string .= $sep . "'" . $value . "'";
+			}
+			$sep = ",";
+		}
+		return $string;
+	}
 }
