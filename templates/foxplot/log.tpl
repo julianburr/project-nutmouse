@@ -7,6 +7,8 @@
 
 <body>
 
+	<h1>Access</h1>
+
 	<h1>Test</h1>
     <?php 
     	echo FormManager::createInput("text", "test", "Dies ist ein Test"); 

@@ -4,20 +4,32 @@
     <?php echo $this->includeTemplate("module/meta"); ?>
 </head>
 
-<body>
+<body class="default content-<?php echo $this->getVar('data.id'); ?>">
+<div class="wrap-all">
     
-    <?php  
+    <?php echo $this->includeTemplate("module/header"); ?>
     
-    	// Header
-    	echo $this->includeTemplate("module/header");
+    <?php if($this->countElements('intro') > 0): ?>
+    <div class="wrap-intro">
+    	<div class="inner">
+        	<div class="col col1">
+        		<?php echo $this->getElements('intro'); ?>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+    
+    <div class="wrap-content">
+    	<div class="inner">
+        	<div class="col col3">&nbsp;</div>
+            <div class="col col3-2">
+        		<?php echo $this->getElements('content'); ?>
+            </div>
+        </div>
+    </div>
         
-        // Main content elements from model
-    	echo $this->getElements('content');
-        
-        // Footer
-        echo $this->includeTemplate("module/footer");
-        
-    ?>
+    <?php echo $this->includeTemplate("module/footer"); ?>
 
+</div>
 </body>
 </html>

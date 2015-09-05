@@ -1,11 +1,13 @@
-<?php
-	$pagetitle = $this->getVar("meta.title.0");
-	if(!$pagetitle) $pagetitle = Config::get("Frontend.Page.DefaultTitle");
-	$sitetitle = Config::get("Frontend.Title");
-	$titlesep = "";
-	if($sitetitle) $titlesep = " | ";
-?>
- 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-	<meta charset="utf-8">
+	<?php echo $this->extendTemplate("module/meta", "default"); ?>
     
-    <title><?php echo $pagetitle . $titlesep . $sitetitle; ?></title>
+    <link rel="icon" href="<?php echo $this->getThemeFile("img/icon.png")->getUrl(); ?>">
+    
+    <script src="<?php echo $this->getThemeFile("js/jquery.js")->getUrl(); ?>"></script>
+    <script src="<?php echo $this->getThemeFile("js/main.js")->getUrl(); ?>"></script>
+    
+    <link href='http://fonts.googleapis.com/css?family=Titillium+Web:400,300,600,900,700|Chau+Philomene+One:400,400italic' rel='stylesheet'>
+    
+    <link href="<?php echo $this->getThemeFile("css/iconfont/styles.css")->getUrl(); ?>" rel="stylesheet">
+    
+	<link href="<?php echo $this->getThemeFile("css/colcontent.css")->getUrl(); ?>" rel="stylesheet">
+    <link href="<?php echo $this->getThemeFile("css/style.css")->getUrl(); ?>" rel="stylesheet">

@@ -14,3 +14,11 @@
 			</div>
         </div>
     </footer>
+    
+    <div class="wrap-copyright">
+    	<div class="inner">
+        	<div class="col col1">
+            	<p><b>&copy; <?php echo DateManager::now("Y"); ?> foxplot</b> | Eine Idee von <b>Burr Design</b> | Erstellt mit <b>NutMouse CMS</b></p>
+            </div>
+        </div>
+    </div>
