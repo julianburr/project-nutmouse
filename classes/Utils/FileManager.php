@@ -2,7 +2,11 @@
 
 class FileManager {
 	
-	private $filepath = null;
+	private $path = null;
+	private $url = null;
+	
+	private $isfile = false;
+	
 	private $content = null;
 	private $content_ln = array();
 	private $line = 0;
@@ -17,10 +21,23 @@ class FileManager {
 	public function setPath($path){
 		// Select file from given path
 		$this->path = $path;
-		if(!is_file($path)){
+		$this->isfile = false;
+		if(is_file($path)){
+			$this->path = realpath($this->path);
+			$this->setUrlFromPath($this->path);
+			$this->isfile = true;
 			$this->content = $this->read();
 			$this->content_ln = explode("\n", $this->content);
 		}
+	}
+	
+	public function setUrlFromPath($path){
+		$this->url = str_replace(realpath($_SERVER['DOCUMENT_ROOT']), "", $path);
+		$this->url = str_replace("\\", "/", $this->url);
+	}
+	
+	public function isFile(){
+		return $this->isfile;	
 	}
 	
 	public function delete(){
@@ -77,6 +94,14 @@ class FileManager {
 	
 	public function setLinePointer($line){
 		$this->line = $line;
+	}
+	
+	public function getUrl(){
+		return $this->url;
+	}
+	
+	public function getPath(){
+		return $this->path;
 	}
 	
 }
