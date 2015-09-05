@@ -2,6 +2,8 @@
 
 class Locale {
 	
+	private static $locales = array();
+	
 	public static function load($lang=null){
 		if(!$lang){
 			$lang = self::getLanguage();
@@ -16,12 +18,11 @@ class Locale {
 			$sql->execute();
 			$locale = array();
 			while($res = $sql->fetch()){
-				$locale[$res['code']] = $res['text'];
+				self::$locales[$lang][$res['code']] = $res['text'];
 			}
 			// Save loaded locales into cache file for later use 
 			Cache::save($cachekey,$locale);
 		}
-		return $locale;
 	}
 	
 	public static function get($code, $lang=null, $defaultvalue=null){
@@ -29,14 +30,13 @@ class Locale {
 		if(!$lang){
 			$lang = self::getLanguage();
 		}
-		$cachekey = "locale:" . $lang;
-		$cache = Cache::load($cachekey);
+		self::load($lang);
 		// If not found, create new locale with default value
-		if(!isset($cache[$code])){
+		if(!isset(self::$locales[$lang][$code]) && !is_null($defaultvalue)){
 			self::save($code, $defaultvalue, $lang);
-			$cache[$code] = $defaultvalue;
+			self::$locales[$lang][$code] = $defaultvalue;
 		}
-		return $cache[$code];
+		return self::$locales[$lang][$code];
 	}
 	
 	public static function save($code, $value, $lang=null){
@@ -58,10 +58,11 @@ class Locale {
 			'code' => $sql->escape($code),
 			'language' => $sql->escape($lang, "int"),
 			'text' => $sql->escape($value),
-			'lastchanged' => date("Y-m-d H:i:s", time())
+			'lastchanged' => DateManager::now()
 		);
 		// Either update database or insert new entry for given locale
 		if(!$check['code']){
+			$loc['created'] = DateManager::now();
 			$sql->insert("locale", $loc);
 		} else {
 			$sql->update("locale", $loc);
