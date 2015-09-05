@@ -5,6 +5,14 @@ class Content {
 	private $id;
 	private $data = array('meta' => array(), 'elements' => array());
 	
+	public function __construct($id=null, $url=null){
+		if(!is_null($id)){
+			$this->loadFromID($id);
+		} elseif(!is_null($url)){
+			$this->loadFromUrl($url);
+		}
+	}
+	
 	public function loadFromUrl($url, $loadmeta=true, $loadelements=true){
 		// Loads content with given URL
 		// Try from cache
@@ -81,10 +89,10 @@ class Content {
 		// No cache found, load from database
 		$sql = new SqlManager();
 		if($parent > 0){
-			$sql->setQuery("SELECT * FROM content_element WHERE content_id = {{id}} AND parent_id = {{parent}} ORDER BY sortkey");
+			$sql->setQuery("SELECT * FROM element WHERE object_table = 'content' AND object_id = {{id}} AND parent_id = {{parent}} ORDER BY sortkey");
 			$sql->bindParam("{{parent}}", $parent, "int");
 		} else {
-			$sql->setQuery("SELECT * FROM content_element WHERE content_id = {{id}} AND parent_id IS NULL ORDER BY sortkey");
+			$sql->setQuery("SELECT * FROM element WHERE object_table = 'content' AND object_id = {{id}} AND parent_id IS NULL ORDER BY sortkey");
 		}
 		$sql->bindParam("{{id}}", $this->id, "int");
 		$sql->execute();
@@ -132,6 +140,33 @@ class Content {
 			return $this->data['type'];
 		}
 		return null;
+	}
+	
+	public function getServerID(){
+		// Return server ID
+		return $this->data['server'];
+	}
+	
+	public function getParent(){
+		// Return parent of current content instance
+		if(isset($this->data['parent_id']) && $this->data['parent_id'] > 0){
+			return $this->data['parent_id'];
+		} 
+		return null;
+	}
+	
+	public function getParentsArray(){
+		// Return array of parent tree of current content
+		$parents = array();
+		$content = new Content($this->id);
+		while(true){
+			if(is_null($content->getParent())){
+				break;
+			}
+			$parents[] = $content->getParent();
+			$content = new Content($content->getParent());
+		}
+		return $parents;
 	}
 	
 	// TODO create, update and delete handling
