@@ -9,7 +9,7 @@ class Cache {
 			$config = new Config();
 			if($config->get("cache.active") != 1){
 				// Cache function deactivated
-				return false;
+				return null;
 			}
 		}
 		// Create file name as hash from given key
@@ -25,10 +25,10 @@ class Cache {
 			// Cache file outdated -> delete cache file
 			$file = new FileManager($path);
 			$file->delete();
-			return false;
+			return null;
 		}
 		// no cache file found!
-		return false;
+		return null;
 	}
 	
 	public static function save($key, $data){
