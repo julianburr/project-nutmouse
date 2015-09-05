@@ -4,7 +4,9 @@ class Controller {
 	
 	private $url = null;
 	private $server = null;
+	
 	private $content_id = null;
+	private $content_parents = array();
 	
 	private $get = array();
 	private $post = array();
@@ -38,6 +40,7 @@ class Controller {
 		$content = new Content();
 		$content->loadFromUrl($this->url);
 		$this->content_id = $content->getID();
+		$this->content_parents = $content->getParentsArray();
 	}
 	
 	public function analyzeRequest(){
@@ -55,11 +58,44 @@ class Controller {
 	}
 	
 	public function analyzeUrl(){
+		// Check if URL is set in general
 		if(is_null($this->url)){
 			throw new Exception("No request URL set!");
 			return;
 		}
+		// Check for rewrtite rules
+		$rewrite = new Rewrite($this->url);
+		$rewrite->applyRules();
+		if($rewrite->getTargetUrl() != $this->url){
+			if($rewrite->isRedirect()){
+				$this->redirectToUrl($rewrite->getTargetUrl());
+			}
+			$this->setUrl($rewrite->getTargetUrl());
+		}
+		// Check access rights to requested content
+		$access = new AccessOfficer("content", $this->content_id, $this->session->getUser(), $this->content_parents);
+		if(!$access->check()){
+			// Access denied
+			if(!$access->getDeniedContentID()){
+				// No content to be shown as 403 page set
+				// TODO set up default 403 (and 404) templates
+				throw new Exception("Access denied and no denied content defined!");
+				return;
+			}
+			// Show 403 error page or redirect if neccessary
+			$newcontent = new Content($access->getDeniedContentID());
+			if($access->isRedirect() && $newcontent->getID() != $this->content_id){
+				// Redirect, but keep requested URL as origin parameter
+				// TODO: keep origin request parameters as well!
+				$this->redirectToUrl("/" . $newcontent->getUrl() . "?origin=" . $this->url);
+			}
+			$this->setUrl($newcontent->getUrl());
+		}
 		// ... here could come redirects and rewrites including manipulation of request vars
+	}
+	
+	public function redirectToUrl($url){
+		header('Location:' . $url);
 	}
 	
 	public function getUrl(){
@@ -89,15 +125,24 @@ class Controller {
 	
 	public function runActions(){
 		// Run requested actions and save responses in array
+		if(isset($this->request['formname'])){
+			$this->response['_form'][$this->request['formname']] = array();
+		}
 		if(isset($this->request['do'])){
 			$action = new Action();
 			if(!is_array($this->request['do'])){
 				$action->init($this->request['do']);
 				$this->response[$this->request['do']] = $action->run();
+				if(isset($this->request['formname'])){
+					$this->response['_form'][$this->request['formname']] = $this->response[$do];
+				}
 			} else {
 				foreach($this->request['do'] as $do){
 					$action->init($do, $this->request);
 					$this->response[$do] = $action->run();
+					if(isset($this->request['formname'])){
+						$this->response['_form'][$this->request['formname']] = array_merge($this->response['_form'][$this->request['formname']], $this->response[$do]);
+					}
 				}
 			}
 		}
@@ -141,6 +186,13 @@ class Controller {
 	
 	public function isCurrentContentID($id){
 		if($id == $this->content_id){
+			return true;
+		}
+		return false;
+	}
+	
+	public function isCurrentContentParent($id){
+		if(in_array($id, $this->content_parents)){
 			return true;
 		}
 		return false;
