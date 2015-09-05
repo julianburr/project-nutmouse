@@ -30,10 +30,21 @@ class User {
 		}
 	}
 	
-	public function loadByLogin($username, $password){
+	public function loadByLogin($username, $password, $groups=array()){
 		// Load user from database by given login data
 		$sql = new SqlManager();
-		$sql->setQuery("SELECT id, password FROM user WHERE username = '{{username}}'");
+		if(count($groups) > 0){
+			$in = $sql->arrayToInString($groups);
+			$sql->setQuery("
+				SELECT user.id, user.password FROM user
+				JOIN meta ON (meta.name = 'assortment' AND meta.value IN ({{groups}}))
+				JOIN assortment ON (assortment.name = 'usergroup' AND assortment.id = meta.value)
+				WHERE username = '{{username}}'
+				");
+			$sql->bindParam("{{groups}}", $in);
+		} else {
+			$sql->setQuery("SELECT id, password FROM user WHERE username = '{{username}}'");
+		}
 		$sql->bindParam("{{username}}", $username);
 		$user = $sql->result();
 		if(isset($user['id']) && isset($user['password']) && Crypt::checkHash($password, $user['password'])){
@@ -81,6 +92,10 @@ class User {
 	public function getID(){
 		// Get current users ID (NULL if no user has been loaded!)
 		return $this->id;
+	}
+	
+	public function getUserGroups(){
+		return Meta::load("user", $this->id, "usergroup");
 	}
 	
 }

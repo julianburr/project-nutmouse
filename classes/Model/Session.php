@@ -75,9 +75,9 @@ class Session {
 		$this->init();
 	}
 	
-	public function login($username, $password){
+	public function login($username, $password, array $groups=array()){
 		// Log user into session
-		$this->user->loadByLogin($username, $password);
+		$this->user->loadByLogin($username, $password, $groups);
 		if(!is_null($this->user->getID())){
 			$this->loggedin = true;
 			return true;
@@ -99,7 +99,10 @@ class Session {
 				"missing_fields" => $missing_fields					
 			);
 		}
-		$success = $this->login($request['username'], $request['password']);
+		if(!isset($request['usergroups']) || !is_array($request['usergroups'])){
+			$request['usergroups'] = array();
+		}
+		$success = $this->login($request['username'], $request['password'], $request['usergroups']);
 		if(!$success){
 			return array(
 				"message" => array(
@@ -127,6 +130,11 @@ class Session {
 		Action::register("killMe", array($this, "kill"));
 		Action::register("userLogin", array($this, "userLogin"));
 		Action::register("userLogout", array($this, "logout"));
+	}
+	
+	public function getUser(){
+		// Return user object
+		return $this->user;
 	}
 
 }
