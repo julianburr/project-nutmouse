@@ -36,6 +36,11 @@ class Meta {
 		return self::load($table, $id, $name, $single);
 	}
 	
+	public static function getUnique($table, $id, $name=null){
+		// Synonym for loadUnique
+		return self::load($table, $id, $name, true);
+	}
+	
 	public static function save($table, $id, $name, $value){
 		// Insert new meta dataset into database
 		$sql = new SqlManager();
@@ -46,6 +51,11 @@ class Meta {
 			"value" => $value
 		);
 		$sql->insert("meta", $insert);
+	}
+	
+	public static function add($table, $id, $name, $value){
+		// Synonym for save()
+		self::save($table, $id, $name, $value);
 	}
 	
 	public static function update($table, $id, $name, $value){
@@ -76,5 +86,46 @@ class Meta {
 		// Synonym for udpateFromID()
 		self::updateFromID($metaid, $value);
 	}
-
+	
+	public static function removeAll($table, $id){
+		// Removes all (!) meta data of specified object
+		$sql = new SqlManager();
+		$sql->setQuery("
+			DELETE FROM meta
+			WHERE object_table = '{{table}}'
+				AND object_id = {{id}}
+			");
+		$sql->bindParam("{{table}}", $table);
+		$sql->bindParam("{{id}}", $id, "int");
+		$sql->execute();
+	}
+	
+	public static function remove($table, $id, $name){
+		// Removes meta dataset(s!!) in database
+		// Notice: All datasets with the given name will be removed!
+		$sql = new SqlManager();
+		$sql->setQuery("
+			DELETE FROM meta
+			WHERE object_table = '{{table}}'
+				AND object_id = {{id}}
+				AND name = '{{name}}'
+			");
+		$sql->bindParam("{{table}}", $table);
+		$sql->bindParam("{{id}}", $id, "int");
+		$sql->bindParam("{{name}}", $name);
+		$sql->execute();
+	}
+	
+	public static function removeFromID($metaid){
+		// Remove specific meta data by given meta.id
+		$sql = new SqlManager();
+		$delete = array("id" => $id);
+		$sql->delete("meta", $delete);
+	}
+	
+	public static function removeSingle($metaid){
+		// Synonym for removeFromID()
+		self::removeFromID($metaid);
+	}
+	
 }
