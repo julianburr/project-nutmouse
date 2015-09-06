@@ -114,10 +114,84 @@ class Session {
 		return true;
 	}
 	
+	public function userRegister($request){
+		// Register new user from request
+		if(empty($request['username'])){
+			return array("message" => array(
+					"type" => "error", 
+					"code" => "MandatoryInputMissing"
+				),
+				"missing_fields" => "username"
+			);
+		}
+		$sql = new SqlManager();
+		$sql->setQuery("SELECT * FROM user WHERE username = '{{username}}'");
+		$sql->bindParam("{{username}}", $request['username']);
+		$check = $sql->result();
+		if(isset($check['id'])){
+			return array("message" => array(
+					"type" => "error", 
+					"code" => "UsernameUsed"
+				)
+			);
+		}
+		$newuser = new User();
+		$id = $newuser->create(array("username" => $request['username']));
+		if(!$id){
+			return array("message" => array(
+					"type" => "error", 
+					"code" => "UnknownError"
+				)
+			);
+		}
+		$newuser->load($id);
+		$groups = array();
+		if(isset($request['usergroups'])){
+			$groups = split(",", $request['usergroups']);
+		}
+		foreach($groups as $group){
+			Meta::save("user", $newuser->getID(), "usergroup", $group);
+		}
+		$newuser->createAuthCode();
+		return array(
+			"redirect" => array(
+				"url" => "/bestaetige-account", 
+				"post" => array(
+					"username" => $request['username']
+				)
+			)
+		);
+	}
+	
+	public function userAuth($request){
+		// Check entered auth code and activate user if successful
+		if(empty($request['authcode'])){
+			return array("message" => array(
+					"type" => "error", 
+					"code" => "MandatoryInputMissing"
+				),
+				"missing_fields" => "authcode"
+			);
+		}
+		if(empty($request['username'])){
+			return array("message" => array(
+					"type" => "error", 
+					"code" => "DataCorrupt"
+				)
+			);
+		}
+	}
+	
 	public function logout(){
 		// Log user out of session
 		$this->user = new User();
 		$this->loggedin = false;
+		return array(
+			"message" => array(
+				"type" => "success", 
+				"code" => "LogoutSuccess"
+			)
+		);
 	}
 	
 	public function isLoggedIn(){
@@ -130,6 +204,7 @@ class Session {
 		Action::register("killMe", array($this, "kill"));
 		Action::register("userLogin", array($this, "userLogin"));
 		Action::register("userLogout", array($this, "logout"));
+		Action::register("userRegister", array($this, "userRegister"));
 	}
 	
 	public function getUser(){

@@ -9,6 +9,8 @@ class User {
 	
 	private $meta = array();
 	
+	private $groups = array();
+	
 	public function __construct($id=null){
 		if(!is_null($id)){
 			// If id is given, load user from id
@@ -27,6 +29,9 @@ class User {
 			$this->data = $user;
 			$this->meta = Meta::load("user", $this->id);
 			$this->config = new Config($this->id);
+			if(isset($this->meta["usergroup"])){
+				$this->groups = $this->meta["usergroup"];
+			}
 		}
 	}
 	
@@ -34,14 +39,13 @@ class User {
 		// Load user from database by given login data
 		$sql = new SqlManager();
 		if(count($groups) > 0){
-			$in = $sql->arrayToInString($groups);
+			$in = $sql->arrayToInString($groups, true);
 			$sql->setQuery("
 				SELECT user.id, user.password FROM user
-				JOIN meta ON (meta.name = 'assortment' AND meta.value IN ({{groups}}))
-				JOIN assortment ON (assortment.name = 'usergroup' AND assortment.id = meta.value)
+				JOIN meta ON (meta.name = 'usergroup' AND meta.value IN (" . $in . "))
+				JOIN assortment ON (assortment.type = 'usergroup' AND assortment.id = meta.value)
 				WHERE username = '{{username}}'
 				");
-			$sql->bindParam("{{groups}}", $in);
 		} else {
 			$sql->setQuery("SELECT id, password FROM user WHERE username = '{{username}}'");
 		}
@@ -77,7 +81,7 @@ class User {
 		$this->delete($data);
 	}
 	
-	public function create(array $data){
+	public function create(array $data, array $meta=array()){
 		// Create new user from given data array
 		$sql = new SqlManager();
 		if(isset($data['password'])){
@@ -85,8 +89,13 @@ class User {
 			$data['password'] = Crypt::createHash($data['password']);
 		}
 		$sql->insert("user", $data);
+		$id = $sql->getLastInsertID();
+		// Save meta data
+		foreach($meta as $key => $value){
+			Meta::save("user", $id, $key, $value);
+		}
 		// Return database ID of added user
-		return $sql->getLastInsertID();
+		return $id;
 	}
 	
 	public function getID(){
@@ -95,7 +104,25 @@ class User {
 	}
 	
 	public function getUserGroups(){
-		return Meta::load("user", $this->id, "usergroup");
+		// Return array of assigned usergroups
+		return $this->groups;
+	}
+	
+	public function createAuthCode(){
+		// Save random auth code in users meta data
+		$authcode = Crypt::hash("random:authcode:" . DateManager::now() . ":" . rand());
+		Meta::remove("user", $this->id, "authcode");
+		Meta::save("user", $this->id, "authcode", Crypt::createHash($authcode));
+	}
+	
+	public function checkAuthCode($code){
+		// Check auth code
+		$authcode = Meta::getSingle("user", $this->id, "authcode");
+		if(!$authcode){
+			// No authcode found!
+			return false;
+		}
+		return Crypt::checkHash($code, $authcode);
 	}
 	
 }
