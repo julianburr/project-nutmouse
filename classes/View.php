@@ -18,8 +18,9 @@ class View {
 	private $parameters = array();
 	private $defined_parameters = array();
 	private $elements = array();
+	private $parent_view = null;
 	
-	public function __construct(Controller $controller=null, Model $model=null){
+	public function __construct(Controller $controller=null, Model $model=null, View $parent=null){
 		if(isset($controller)){
 			// Set contoller if given
 			$this->controller = $controller;
@@ -34,6 +35,9 @@ class View {
 				// Set template if given
 				$this->template = $this->content->getTemplate();
 			}
+		}
+		if(isset($parent)){
+			$this->parent_view = $parent;	
 		}
 		$this->config = new Config();
 	}
@@ -170,7 +174,7 @@ class View {
 		$content = "";
 		if(isset($this->elements[$area])){
 			foreach($this->elements[$area] as $element){
-				$view = new View($this->controller, $this->model);
+				$view = new View($this->controller, $this->model, $this);
 				if(!isset($element['type'])){
 					throw new Exception("No template type set!");
 				}
@@ -271,7 +275,7 @@ class View {
 	
 	public function includeTemplate($path, $params=array(), $elements=array(), $theme=null){
 		// Include template with parameter options and return parsed output
-		$view = new View($this->controller, $this->model);
+		$view = new View($this->controller, $this->model, $this);
 		$view->setTemplate($path, $theme);
 		$view->assignVars($this->vars);
 		$view->assignParams($params);
@@ -338,6 +342,11 @@ class View {
 			// TODO
 		}
 		return $desc;
+	}
+	
+	public function getParent(){
+		// Return parent view instance
+		return $this->parent_view;
 	}
 	
 }
