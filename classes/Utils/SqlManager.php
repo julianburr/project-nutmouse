@@ -532,12 +532,12 @@ class SqlManager {
 		return $queries;
 	}
 	
-	public function arrayToInString(array $array){
+	public function arrayToInString(array $array, $force_string=false){
 		// Transforms an array of values to a string to be used in an IN statement
 		$string = "";
 		$sep = "";
 		foreach($array as $value){
-			if(is_numeric($value)){
+			if(is_numeric($value) && !$force_string){
 				$string .= $sep . $value;
 			} else {
 				$string .= $sep . "'" . $value . "'";
