@@ -32,8 +32,10 @@ class Locale {
 		}
 		self::load($lang);
 		// If not found, create new locale with default value
-		if(!isset(self::$locales[$lang][$code]) && !is_null($defaultvalue)){
-			self::save($code, $defaultvalue, $lang);
+		if(!isset(self::$locales[$lang][$code])){
+			if(!is_null($defaultvalue)){
+				self::save($code, $defaultvalue, $lang);
+			}
 			self::$locales[$lang][$code] = $defaultvalue;
 		}
 		return self::$locales[$lang][$code];
