@@ -42,4 +42,18 @@ class Rewrite {
 		return false;
 	}
 	
+	public function isLastForward(){
+		if(isset($this->data['last']) && $this->data['last'] == 1){
+			return true;
+		}
+		return false;
+	}
+	
+	public function transportQueryParameter(){
+		if(isset($this->data['transportquery']) && $this->data['transportquery'] == 1){
+			return true;
+		}
+		return false;
+	}
+	
 }

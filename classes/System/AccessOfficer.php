@@ -150,6 +150,20 @@ class AccessOfficer {
 		return false;
 	}
 	
+	public function isLastForward(){
+		if(isset($this->access_data['last']) && $this->access_data['last'] == 1){
+			return true;
+		}
+		return false;
+	}
+	
+	public function transportQueryParameter(){
+		if(isset($this->access_data['last']) && $this->access_data['last'] == 1){
+			return true;
+		}
+		return false;
+	}
+	
 	public function getAccessData(){
 		// Return acces data array
 		return $this->access_data;
