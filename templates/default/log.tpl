@@ -7,26 +7,11 @@
 
 <body>
 
-	<?php if($this->__['controller']->getSession()->isLoggedIn()): ?>
-    <p>You are logged in!</p>
-    <h1>Logout</h1>
-    <form name="logout" action="" method="post">
-    	<input type="hidden" name="do[]" value="userLogout">
-        <button>Logout</button>
-    </form>
-    <?php else: ?>
-    <h1>Login</h1>
-    <?php
-    	$form = new FormManager();
-        $form->setName("login");
-        $form->setMethod("post");
-        $form->addHiddenAction("userLogin");
-        $form->addInput("text", "username", $this->__['controller']->getRequest()['username']);
-        $form->addInput("password", "password", "");
-        $form->addButton("Login");
-        echo $form->createOutput();
-    ?>
-    <?php endif; ?>
+	<h1>_POST</h1>
+    <pre><?php var_dump($this->getVar('controller')->getPost()); ?>
+
+	<h1>Session</h1>
+    <pre><?php var_dump($this->getVar('controller')->getSession()->isLoggedIn(), $this->getVar('controller')->getSession()->getUser()); ?></pre>
     
     <h1>Backtrace</h1>
     <pre><?php
@@ -35,7 +20,7 @@
     
 	<h1>Log</h1>
     <pre><?php
-    	var_dump($this->__);
+    	var_dump($this->getVars());
     ?></pre>
 
 </body>

@@ -9,5 +9,6 @@
     
     <link href="<?php echo $this->getThemeFile("css/iconfont/styles.css")->getUrl(); ?>" rel="stylesheet">
     
+    <link href="<?php echo $this->getThemeFile("css/general.css")->getUrl(); ?>" rel="stylesheet">
 	<link href="<?php echo $this->getThemeFile("css/colcontent.css")->getUrl(); ?>" rel="stylesheet">
     <link href="<?php echo $this->getThemeFile("css/style.css")->getUrl(); ?>" rel="stylesheet">
